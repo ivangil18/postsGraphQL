@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 const path = require('path');
 const multer = require('multer');
 const bodyParser = require('body-parser');
+const graphqlHttp = require('express-graphql');
+
+const graphqlSchema = require('./graphql/schema');
+const graphqlResolver = require('./graphql/resolvers');
 
 const app = express();
 
@@ -45,8 +49,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes);
+app.use(
+  '/graphql',
+  graphqlHttp({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver
+  })
+);
 
 app.use((error, req, res, next) => {
   console.log(error);
