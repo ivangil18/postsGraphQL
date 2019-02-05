@@ -19,16 +19,22 @@ type User {
 }
 
 input userDataInput {
-    email: string!
-    name: string!
-    password: string!
+    email: String!
+    name: String!
+    password: String!
+}
+
+type RootQuery {
+    hello: String
 }
 
 type RootMutation {
     createUser(userInput: userDataInput): User!
 }
 
+
 schema {
+    query: RootQuery
     mutation: RootMutation
 }
 `);
