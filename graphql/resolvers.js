@@ -15,17 +15,20 @@ module.exports = {
       validator.isEmpty(userInput.password) ||
       !validator.isLength(userInput.password, { min: 5 })
     ) {
-      errors.push('Passord empty or not valid');
+      errors.push({ message: 'Password not valid or Empty field' });
     }
     if (
       validator.isEmpty(userInput.name) ||
       !validator.isLength(userInput.name, { min: 3 })
     ) {
-      errors.push('Name empty or not valid');
+      errors.push({ message: 'Name not valid or Empty field' });
     }
 
     if (errors.length > 0) {
-      throw new Error('Input not Valid!');
+      const error = new Error('Input not Valid!');
+      error.code = 422;
+      error.data = errors;
+      throw error;
     }
 
     const userExists = await User.findOne({ email: userInput.email });
