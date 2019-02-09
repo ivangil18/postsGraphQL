@@ -3,6 +3,7 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
+const Post = require('../models/post');
 
 module.exports = {
   createUser: async function({ userInput }, req) {
@@ -53,6 +54,7 @@ module.exports = {
 
   login: async function({ email, password }) {
     const user = await User.findOne({ email: email });
+     
 
     if (!user) {
       const error = new Error('User not found!');
@@ -75,7 +77,6 @@ module.exports = {
     );
 
     console.log({ token: token, userId: user._id.toString() });
- 
 
     return { token: token, userId: user._id.toString() };
   }
