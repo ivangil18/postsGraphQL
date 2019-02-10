@@ -1,14 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
+
+const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const multer = require('multer');
 const graphqlHttp = require('express-graphql');
 
 const graphqlSchema = require('./graphql/schema');
 const graphqlResolver = require('./graphql/resolvers');
-
 const auth = require('./middleware/auth');
 
 const app = express();
@@ -46,12 +46,12 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(
     'Access-Control-Allow-Methods',
-    'GET, PUT, POST, PATCH, DELETE, OPTIONS'
+    'OPTIONS, GET, PUT, POST, PATCH, DELETE'
   );
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
+    return res.sendStatus(200);
   }
   next();
 });
@@ -60,21 +60,20 @@ app.use(auth);
 
 app.put('/post-image', (req, res, next) => {
   if (!req.isAuth) {
-    const error = new Error('User not Authenticated!');
-    error.code = 401;
-    throw error;
+    throw new Error('User not Authenticated!');
   }
 
   if (!req.file) {
-    req.file.path = req.body.oldPath;
-    res.statusCode(200).json({ message: 'No file selected' });
+    res.status(200).json({ message: 'No file provided!' });
   }
 
-  deleteFile(req.body.oldPath);
+  if (req.body.oldPath) {
+    deleteFile(req.body.oldPath);
+  }
 
-  res
-    .statusCode(201)
-    .json({ message: 'Image Uploaded', imagePath: req.file.path });
+  return res
+    .status(201)
+    .json({ message: 'Image Uploaded', filePath: req.file.path });
 });
 
 app.use(
@@ -88,8 +87,8 @@ app.use(
         return err;
       }
       const data = err.originalError.data;
-      const message = err.originalError.message;
-      const code = err.originalError.code;
+      const message = err.message || 'An error occurred';
+      const code = err.originalError.code || 500;
 
       return { message: message, status: code, data: data };
     }
