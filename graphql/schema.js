@@ -45,7 +45,7 @@ input PostInputData {
 type RootQuery {
     login(email: String!, password: String!): AuthData!
     getPost(postId: String!):Post!
-    getPosts: PostsData!
+    getPosts(page: Int!): PostsData!
 }
 
 type RootMutation {

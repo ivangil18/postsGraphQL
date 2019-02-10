@@ -155,14 +155,21 @@ module.exports = {
     };
   },
 
-  getPosts: async function(args, req) {
-    // if (!req.isAuth) {
-    //   const error = new Error('User not authenticated!');
-    //   error.code = 401;
-    //   throw error;
-    // }
+  getPosts: async function({ page }, req) {
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
+    if (!page) {
+      page = 1;
+    }
+    const perPage = 2;
 
     const posts = await Post.find()
+      .skip((page - 1) * perPage)
+      .limit(perPage)
       .sort({ createdAt: -1 })
       .populate('creator');
 
@@ -179,14 +186,5 @@ module.exports = {
       }),
       totalPosts: totalPosts
     };
-
-    // return
-    //   {
-    //     ...posts._doc,
-    //     _id: posts._id.toString(),
-    //     createdAt: posts.createdAt.toISOString(),
-    //     updatedAt: posts.updatedAt.toISOString()
-    //   }
-    // ;
   }
 };

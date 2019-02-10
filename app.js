@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
@@ -57,6 +58,25 @@ app.use((req, res, next) => {
 
 app.use(auth);
 
+app.put('/post-image', (req, res, next) => {
+  if (!req.isAuth) {
+    const error = new Error('User not Authenticated!');
+    error.code = 401;
+    throw error;
+  }
+
+  if (!req.file) {
+    req.file.path = req.body.oldPath;
+    res.statusCode(200).json({ message: 'No file selected' });
+  }
+
+  deleteFile(req.body.oldPath);
+
+  res
+    .statusCode(201)
+    .json({ message: 'Image Uploaded', imagePath: req.file.path });
+});
+
 app.use(
   '/graphql',
   graphqlHttp({
@@ -96,3 +116,8 @@ mongoose
   .catch(err => {
     console.log(err);
   });
+
+const deleteFile = filePath => {
+  file = path.join(__dirname, '..', filePath);
+  fs.unlink(file, err => console.log(err));
+};
