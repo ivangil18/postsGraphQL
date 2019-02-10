@@ -136,5 +136,57 @@ module.exports = {
       createdAt: postCreated.createdAt.toISOString(),
       updatedAt: postCreated.updatedAt.toISOString()
     };
+  },
+
+  getPost: async function({ postId }, req) {
+    // if (!req.isAuth) {
+    //   const error = new Error('User not authenticated!');
+    //   error.code = 401;
+    //   throw error;
+    // }
+
+    const post = await Post.findById(postId).populate('creator');
+
+    return {
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString()
+    };
+  },
+
+  getPosts: async function(args, req) {
+    // if (!req.isAuth) {
+    //   const error = new Error('User not authenticated!');
+    //   error.code = 401;
+    //   throw error;
+    // }
+
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate('creator');
+
+    const totalPosts = await Post.find().countDocuments();
+
+    return {
+      posts: posts.map(p => {
+        return {
+          ...p._doc,
+          _id: p._id.toString(),
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString()
+        };
+      }),
+      totalPosts: totalPosts
+    };
+
+    // return
+    //   {
+    //     ...posts._doc,
+    //     _id: posts._id.toString(),
+    //     createdAt: posts.createdAt.toISOString(),
+    //     updatedAt: posts.updatedAt.toISOString()
+    //   }
+    // ;
   }
 };
