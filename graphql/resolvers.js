@@ -81,6 +81,8 @@ module.exports = {
   },
 
   createPost: async function({ postInput }, req) {
+    console.log('Entra aqui a create post');
+
     if (!req.isAuth) {
       const error = new Error('User not authenticated!');
       error.code = 401;
@@ -119,6 +121,8 @@ module.exports = {
       throw error;
     }
 
+    console.log(postInput.imageUrl);
+
     const post = new Post({
       title: postInput.title,
       content: postInput.content,
@@ -139,13 +143,19 @@ module.exports = {
   },
 
   getPost: async function({ postId }, req) {
-    // if (!req.isAuth) {
-    //   const error = new Error('User not authenticated!');
-    //   error.code = 401;
-    //   throw error;
-    // }
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
 
     const post = await Post.findById(postId).populate('creator');
+
+    if (!post) {
+      const error = new Error('Post not found!');
+      error.code = 404;
+      throw error;
+    }
 
     return {
       ...post._doc,
@@ -185,6 +195,70 @@ module.exports = {
         };
       }),
       totalPosts: totalPosts
+    };
+  },
+
+  updatePost: async function({ postInput, postId }, req) {
+
+    console.log('entra aqui');
+    
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
+    const post = await Post.findById(postId).populate('creator');
+
+    if (!post) {
+      const error = new Error('Post not found!');
+      error.code = 404;
+      throw error;
+    }
+
+    if (post.creator._id.toString() !== req.userId.toString()) {
+      const error = new Error('User not Authorized to edit post!');
+      error.code = 403;
+      throw error;
+    }
+
+    const errors = [];
+
+    if (
+      validator.isEmpty(postInput.title) ||
+      !validator.isLength(postInput.title, { min: 5 })
+    ) {
+      errors.push({ message: 'Title not valid!' });
+    }
+
+    if (
+      validator.isEmpty(postInput.content) ||
+      !validator.isLength(postInput.title, { min: 5 })
+    ) {
+      errors.push({ message: 'Content not valid!' });
+    }
+
+    if (errors.length > 0) {
+      const error = new Error('Invalid Inputs');
+      error.code = 422;
+      error.data = errors;
+      throw error;
+    }
+
+    post.title = postInput.title;
+    post.content = postInput.content;
+
+    if (postInput.imageUrl !== 'undefined') {
+      post.imageUrl = postInput.imageUrl;
+    }
+
+    const updatedPost = await post.save();
+
+    return {
+      ...updatedPost._doc,
+      _id: updatedPost._id.toString(),
+      createdAt: updatedPost.createdAt.toISOString(),
+      updatedAt: updatedPost.updatedAt.toISOString()
     };
   }
 };

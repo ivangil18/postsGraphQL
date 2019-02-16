@@ -44,13 +44,14 @@ input PostInputData {
 
 type RootQuery {
     login(email: String!, password: String!): AuthData!
-    getPost(postId: String!):Post!
+    getPost(postId: ID!):Post!
     getPosts(page: Int!): PostsData!
 }
 
 type RootMutation {
     createUser(userInput: UserInputData): User!
     createPost(postInput: PostInputData): Post!
+    updatePost(postInput: PostInputData, postId: ID!): Post!
     
 }
 
