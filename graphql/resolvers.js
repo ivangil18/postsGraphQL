@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Post = require('../models/post');
 
+const { deleteFile } = require('../util/file');
+
 module.exports = {
   createUser: async function({ userInput }, req) {
     const errors = [];
@@ -199,9 +201,6 @@ module.exports = {
   },
 
   updatePost: async function({ postInput, postId }, req) {
-
-    console.log('entra aqui');
-    
     if (!req.isAuth) {
       const error = new Error('User not authenticated!');
       error.code = 401;
@@ -260,5 +259,36 @@ module.exports = {
       createdAt: updatedPost.createdAt.toISOString(),
       updatedAt: updatedPost.updatedAt.toISOString()
     };
+  },
+
+  deletePost: async function({ postId }, req) {
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
+    const post = await Post.findById(postId).populate('creator');
+
+    if (!post) {
+      const error = new Error('Post not found!');
+      error.code = 404;
+      throw error;
+    }
+
+    if (post.creator._id.toString() !== req.userId.toString()) {
+      const error = new Error('User not Authorized to edit post!');
+      error.code = 403;
+      throw error;
+    }
+
+    deleteFile(post.imageUrl);
+
+    await Post.findByIdAndDelete(postId);
+    const user = await User.findById(req.userId);
+    user.posts.pull(postId);
+    await user.save();
+
+    return true;
   }
 };
