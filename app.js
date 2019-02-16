@@ -64,10 +64,12 @@ app.put('/post-image', (req, res, next) => {
   }
 
   if (!req.file) {
-    res.status(200).json({ message: 'No file provided!' });
+    return res.status(200).json({ message: 'No file provided!' });
   }
 
   if (req.body.oldPath) {
+    console.log(req.body.oldPath);
+  
     deleteFile(req.body.oldPath);
   }
 
