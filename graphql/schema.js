@@ -30,6 +30,10 @@ type PostsData {
     totalPosts: Int!
 }
 
+type StatusData {
+    status: String!
+}
+
 input UserInputData {
     email: String!
     name: String!
@@ -46,12 +50,15 @@ type RootQuery {
     login(email: String!, password: String!): AuthData!
     getPost(postId: ID!):Post!
     getPosts(page: Int!): PostsData!
+    getUserStatus: StatusData!
 }
 
 type RootMutation {
     createUser(userInput: UserInputData): User!
     createPost(postInput: PostInputData): Post!
     updatePost(postInput: PostInputData, postId: ID!): Post!
+    deletePost(postId: ID!): Boolean
+    updateUserStatus(userStatus: String!): StatusData!
     
 }
 

@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -10,6 +9,7 @@ const graphqlHttp = require('express-graphql');
 const graphqlSchema = require('./graphql/schema');
 const graphqlResolver = require('./graphql/resolvers');
 const auth = require('./middleware/auth');
+const { deleteFile } = require('./util/file');
 
 const app = express();
 
@@ -69,7 +69,7 @@ app.put('/post-image', (req, res, next) => {
 
   if (req.body.oldPath) {
     console.log(req.body.oldPath);
-  
+
     deleteFile(req.body.oldPath);
   }
 
@@ -117,8 +117,3 @@ mongoose
   .catch(err => {
     console.log(err);
   });
-
-const deleteFile = filePath => {
-  file = path.join(__dirname, '..', filePath);
-  fs.unlink(file, err => console.log(err));
-};
