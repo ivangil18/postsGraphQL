@@ -82,6 +82,45 @@ module.exports = {
     return { token: token, userId: user._id.toString() };
   },
 
+  getUserStatus: async function(arg, req) {
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const error = new Error('User not found!');
+      error.code = 401;
+      throw error;
+    }
+
+    return { status: user.status };
+  },
+
+  updateUserStatus: async function({ userStatus }, req) {
+    if (!req.isAuth) {
+      const error = new Error('User not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+
+    const user = await User.findById(req.userId);
+
+    user.status = userStatus;
+    const userUpdated = await user.save();
+
+    if (!user) {
+      const error = new Error('User not found!');
+      error.code = 401;
+      throw error;
+    }
+
+    return { status: userUpdated.status };
+  },
+
   createPost: async function({ postInput }, req) {
     console.log('Entra aqui a create post');
 
